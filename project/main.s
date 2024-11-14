@@ -36,13 +36,14 @@ Part 1
 .global _start
 _start: 
     movia r16, 0x10001000 ## Endereco UART
-    movia r18, 0x8000 ## Mascara RVALID 
+    
     movi r23, LIST 
     addi r20, r0, 0xFF ## mascara primeiros 8 bits
     mov r22, r0 # Zera index de list
 
 POLLING_READ:
     ldwio r17, (r16) ## Carrega valor em memória
+    movia r18, 0x8000 ## Mascara RVALID 
     and r19,r17, r18 ## Aplica mascara para recuperar valor do RVALID 
     beq r19, r0, POLLING_READ ## Se R VALID = 0, retorna pro pooling
     and r17, r17, r20 ## Recupera apenas os bits de valor
@@ -51,7 +52,14 @@ POLLING_WRITE:
     andhi r21, r21, 0xFFFF
     beq r21, r0, POLLING_WRITE
     stwio r17, (r16)
+    movi r18, 0x0A # Procura por fim de linha (carriage Reutnr )
+    beq r17,r18, stop
+        ## Mascara RVALID 
     br POLLING_READ
+
+
+
+
 
 stop: 
     br stop
