@@ -80,5 +80,11 @@ stop:
     br stop
 
 .equ LIST, 0x500
-.org LIST
-.word 20 # Somente vinte caracteres permitidos
+## NOT IMPLEMENTED YET
+##.org LIST
+##.word 20 # Somente vinte caracteres permitidos
+
+
+.equ REPEATER_MESSAGE, 0x1000
+.org REPEATER_MESSAGE
+.word 0x456e74726520636f6d206f20636f6d616e646f3a # Equivalente com "Entre com o comando:"
