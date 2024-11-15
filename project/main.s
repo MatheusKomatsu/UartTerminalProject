@@ -22,13 +22,6 @@ Part 1
     Endereço Data register UART -> 0x10001000
     Endereço Control register UART -> 0x10001004
     Máscara RVALID 0xFFFF
-- Mapeamento
-    R16 -> Endereco UART
-    R17 -> Reservado para pegar o valor dos dados do UART
-    R18 -> Máscara para RVALID F
-    r19 -> R17 com mascara aplicada
-    r20 -> Mascar dos primeiros 8 bits
-    r21 -> Carrega o valor do registrador do controle uart
 :)
 */
 
@@ -44,6 +37,21 @@ REPEATER_COMMAND:
     movi r23, LIST 
     addi r20, r0, 0xFF ## mascara primeiros 8 bits
 
+SHOW_ENTRY_MESSAGE:
+    # Checar buffer
+    ldwio r21, 4(r16) # Endereco UART controll
+    andhi r21, r21, 0xFFFF
+    beq r21, r0, SHOW_ENTRY_MESSAGE
+
+    # Imprime mensagem inicial
+    movia r22, REPEATER_MESSAGE
+PRINT_ENTRY_MESSAGE:  
+    # Carrega Byte a byte os caracteres da mensagem
+    ldb r17, (r22)
+    beq r17, r0, POLLING_READ
+    stwio r17, (r16) # Faz caracter aparecer no prompt
+    addi r22, r22, 1 # Avança character
+    br PRINT_ENTRY_MESSAGE
 
 POLLING_READ:
     ldwio r17, (r16) ## Carrega valor em memória
@@ -83,8 +91,5 @@ stop:
 ## NOT IMPLEMENTED YET
 ##.org LIST
 ##.word 20 # Somente vinte caracteres permitidos
-
-
-.equ REPEATER_MESSAGE, 0x1000
-.org REPEATER_MESSAGE
-.word 0x456e74726520636f6d206f20636f6d616e646f3a # Equivalente com "Entre com o comando:"
+REPEATER_MESSAGE:
+.asciz "Entre com o comando: "
