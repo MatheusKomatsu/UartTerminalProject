@@ -37,14 +37,17 @@ Part 1
 _start: 
     movia r16, 0x10001000 ## Endereco UART
     
+
+
+REPEATER_COMMAND:
     # TODO: Must me reset after each command
     movi r23, LIST 
     addi r20, r0, 0xFF ## mascara primeiros 8 bits
 
+
 POLLING_READ:
     ldwio r17, (r16) ## Carrega valor em memória
-    movia r18, 0x8000 ## Mascara RVALID 
-    and r19,r17, r18 ## Aplica mascara para recuperar valor do RVALID 
+    andi r19,r17, 0x8000 ## Aplica mascara para recuperar valor do RVALID 
     beq r19, r0, POLLING_READ ## Se R VALID = 0, retorna pro pooling
     and r17, r17, r20 ## Recupera apenas os bits de valor
 POLLING_WRITE:
@@ -65,6 +68,13 @@ ADD_CHARACTER:
 COMPARISON_END_TEXT:
     movi r18, 0x0A # Procura por fim de linha (carriage Reutnr )
     bne r17,r18, POLLING_READ
+
+## TRATAMETNO PARSE DO COMANDO
+
+
+
+## FIM DO TRATAMENTO PARSE DO COMANDo
+    br REPEATER_COMMAND # Reiniciar repetidor para entrada de comandos
 
 stop: 
     br stop
