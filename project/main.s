@@ -37,9 +37,9 @@ Part 1
 _start: 
     movia r16, 0x10001000 ## Endereco UART
     
+    # TODO: Must me reset after each command
     movi r23, LIST 
     addi r20, r0, 0xFF ## mascara primeiros 8 bits
-    mov r22, r0 # Zera index de list
 
 POLLING_READ:
     ldwio r17, (r16) ## Carrega valor em memória
@@ -51,15 +51,20 @@ POLLING_WRITE:
     ldwio r21, 4(r16) # Endereco UART controll
     andhi r21, r21, 0xFFFF
     beq r21, r0, POLLING_WRITE
-    stwio r17, (r16)
+    stwio r17, (r16) # Faz caracter aparecer no prompt
+
+    movi r22, 0x08 # usado para identificar Backspace
+    bne r17,r22, ADD_CHARACTER
+    addi r23, r23, -4 # Volta uma posicao na lista de caracteres
+    stwio r0, (r23) # Zera a posicao anterior da lista
+    br COMPARISON_END_TEXT
+ADD_CHARACTER:
+    stwio r17, (r23) # Armazena caracter na memória
+    addi r23, r23, 4 # Progride uma posicao na lista de caracteres
+
+COMPARISON_END_TEXT:
     movi r18, 0x0A # Procura por fim de linha (carriage Reutnr )
-    beq r17,r18, stop
-        ## Mascara RVALID 
-    br POLLING_READ
-
-
-
-
+    bne r17,r18, POLLING_READ
 
 stop: 
     br stop
