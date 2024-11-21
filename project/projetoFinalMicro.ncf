@@ -20,7 +20,14 @@
         <type>ASSEMBLY</type>
         <options>
             <source_files>
+                <source_file filepath="true">end_animation.s</source_file>
                 <source_file filepath="true">main.s</source_file>
+                <source_file filepath="true">nios_macros.s</source_file>
+                <source_file filepath="true">start_animation.s</source_file>
+                <source_file filepath="true">timer_off.s</source_file>
+                <source_file filepath="true">timer_on.s</source_file>
+                <source_file filepath="true">turn_off_led.s</source_file>
+                <source_file filepath="true">turn_on_led.s</source_file>
             </source_files>
             <start_symbol>_start</start_symbol>
         </options>

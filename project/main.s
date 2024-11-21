@@ -30,8 +30,6 @@ Part 1
 _start: 
     movia r16, 0x10001000 ## Endereco UART
     
-
-
 REPEATER_COMMAND:
     # TODO: Must me reset after each command
     movi r23, LIST 
@@ -78,8 +76,103 @@ COMPARISON_END_TEXT:
     bne r17,r18, POLLING_READ
 
 ## TRATAMETNO PARSE DO COMANDO
+PARSE_COMMAND:
+## Vericia 3 casos aceito, 0X, 1X,2X, na lista de caracteres do comando
+    movi r23, LIST
+    ldw r20, (r23)
+## Compara com caracter "0"
+    addi r21, r0, 0x30 
+    beq r20, r21, CASE0X
+## Compara com caracter "1"
+    addi r21, r0, 0x31
+    beq r20, r21, CASE1X
+## Compara com caracter "2"
+    addi r21, r0, 0x32
+    beq r20, r21, CASE2X
+    br REPEATER_COMMAND
+    
+CASE0X:
+## Avanca na lista
+    addi r23,r23, 4
+    ldw r20, (r23)
+    addi r21, r0, 0x30
+    beq r20, r21, CASE00
+    addi r21, r0, 0x31 
+    beq r20, r21, CASE01
+    br REPEATER_COMMAND
+CASE00:
+    addi r23,r23, 4
+    ldw r20, (r23)
+    ## Verifica espaco
+    addi r21, r0, 0x20
+    bne r20,r21, REPEATER_COMMAND 
+    ## Verifica se comando esta corretp
+    addi r23,r23, 4
+    ldw r20, (r23)
+    addi r21, r0, 0xa
+    beq r21, r20, REPEATER_COMMAND      
+    ## se estover correto, carrega parametro
+    mov r4, r20
+    addi r23,r23, 4
+    ldw r20, (r23)
+    addi r21, r0, 0xa
+    beq r21, r20, REPEATER_COMMAND
+    mov r5, r20
+    call _turn_on_led
+    br REPEATER_COMMAND 
 
-
+CASE01:
+    addi r23,r23, 4
+    ldw r20, (r23)
+    ## Verifica espaco
+    addi r21, r0, 0x20
+    bne r20,r21, REPEATER_COMMAND 
+    ## Verifica se comando esta corretp
+    addi r23,r23, 4
+    ldw r20, (r23)
+    addi r21, r0, 0xa
+    beq r21, r20, REPEATER_COMMAND      
+    ## se estover correto, carrega parametro
+    mov r4, r20
+    addi r23,r23, 4
+    ldw r20, (r23)
+    addi r21, r0, 0xa
+    beq r21, r20, REPEATER_COMMAND
+    mov r5, r20
+    call _turn_of_led
+    br REPEATER_COMMAND 
+CASE1X:
+    addi r23,r23, 4
+    ldw r20, (r23)
+    addi r21, r0, 0xa
+    beq r21, r20, REPEATER_COMMAND  
+    addi r21, r0, 0x30
+    beq r21, r20, CASE10
+    addi r21, r0, 0x31
+    beq r21, r20, CASE11
+    br REPEATER_COMMAND
+CASE10:
+    call _start_animation
+    br REPEATER_COMMAND
+CASE11:
+    call _end_animation
+    br REPEATER_COMMAND	
+CASE2X:
+    addi r23,r23, 4
+    ldw r20, (r23)
+    addi r21, r0, 0xa
+    beq r21, r20, REPEATER_COMMAND  
+    addi r21, r0, 0x30
+    beq r21, r20, CASE20
+    addi r21, r0, 0x31
+    beq r21, r20, CASE21
+    br REPEATER_COMMAND
+CASE20:
+    call _timer_on
+    br REPEATER_COMMAND
+CASE21:
+    call _timer_off
+    br REPEATER_COMMAND
 
 ## FIM DO TRATAMENTO PARSE DO COMANDo
     br REPEATER_COMMAND # Reiniciar repetidor para entrada de comandos
