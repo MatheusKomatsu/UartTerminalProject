@@ -139,7 +139,7 @@ CASE01:
     addi r21, r0, 0xa
     beq r21, r20, REPEATER_COMMAND
     mov r5, r20
-    call _turn_of_led
+    call _turn_off_led
     br REPEATER_COMMAND 
 CASE1X:
     addi r23,r23, 4
