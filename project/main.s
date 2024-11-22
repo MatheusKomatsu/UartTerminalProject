@@ -25,6 +25,37 @@ Part 1
 :)
 */
 
+.org 0x20
+RTI: 
+/* Exception handler */
+    rdctl et, ipending /* Check if external interrupt occurred */
+    beq et, r0, OTHER_EXCEPTIONS /* If zero, check exceptions */
+    subi ea, ea, 4 /* Hardware interrupt, decrement ea to execute the interrupted */
+
+    /* instruction upon return to main program */
+
+    andi r13, et, 1 /* Check if irq0 asserted */
+    beq r13, r0, OTHER_INTERRUPTS /* If not, check other external interrupts */
+    call EXT_IRQ0 /* If yes, go to IRQ0 service routine */
+
+OTHER_INTERRUPTS:
+    /* Instructions that check for other hardware interrupts should be placed here */
+
+    br END_HANDLER /* Done with hardware interrupts */
+    
+OTHER_EXCEPTIONS:
+    /* Instructions that check for other types of exceptions should be placed here */
+
+END_HANDLER:
+    eret /* Return from exception */
+
+.org 0x100
+    /* Interrupt-service routine for the desired hardware interrupt */
+    EXT_IRQ0:
+
+        call _start_animation
+
+        ret # retorna a rotina
 
 .global _start
 _start: 
@@ -152,7 +183,7 @@ CASE1X:
     beq r21, r20, CASE11
     br REPEATER_COMMAND
 CASE10:
-    call _start_animation
+    call _enable_timer
     br REPEATER_COMMAND
 CASE11:
     call _end_animation
@@ -168,7 +199,7 @@ CASE2X:
     beq r21, r20, CASE21
     br REPEATER_COMMAND
 CASE20:
-    call _timer_on
+    call _enable_timer
     br REPEATER_COMMAND
 CASE21:
     call _timer_off
