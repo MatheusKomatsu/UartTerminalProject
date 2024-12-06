@@ -20,9 +20,9 @@
         <type>ASSEMBLY</type>
         <options>
             <source_files>
+                <source_file filepath="true">main.s</source_file>
                 <source_file filepath="true">enable_timer.s</source_file>
                 <source_file filepath="true">end_animation.s</source_file>
-                <source_file filepath="true">main.s</source_file>
                 <source_file filepath="true">nios_macros.s</source_file>
                 <source_file filepath="true">start_animation.s</source_file>
                 <source_file filepath="true">timer_off.s</source_file>

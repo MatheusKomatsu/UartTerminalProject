@@ -47,18 +47,64 @@ OTHER_EXCEPTIONS:
     /* Instructions that check for other types of exceptions should be placed here */
 
 END_HANDLER:
+    movia r17, 0x10002000 
+    stwio r0, (r17) # reseta bit     
     eret /* Return from exception */
 
 .org 0x100
     /* Interrupt-service routine for the desired hardware interrupt */
     EXT_IRQ0:
+        andi r13, r15, 0b1
+        addi r14, r0, 0b1
+        bne r14, r13, SKIP_ANIMATION # faz o controle de flag de animação        
+        mov r14, r31 # salva endereco de retorno
+        call _start_animation # criar stack frame
+        mov r31, r14 # retorna endereco de retorno       
 
-        call _start_animation
+SKIP_ANIMATION:
+        movia r13, COUNTER
+        ldw r13, (r13)
+        addi r14, r0, 5
+        bne r13, r14, SKIP_COUNTER
+        
+        movia r13, COUNTER
+        stw r0, (r13)
+        andi r13, r15, 0b10
+        addi r14, r0, 0b10
+        bne r14, r13, SKIP_DISPLAY
+        mov r14, r31
+        call _timer_on
+        mov r31, r14
+SKIP_DISPLAY:
+        ret
 
+SKIP_COUNTER:
+        addi r13, r13, 1
+        movia r14, COUNTER
+        stw r13, (r14)
         ret # retorna a rotina
 
 .global _start
-_start: 
+_start:
+    movia r16, TIMER
+    stw r0, (r16) 
+    movia r16, COUNTER
+    stwio r0, (r16) 
+    addi r17, r0, 1 # coloca 1 em r17
+    wrctl status, r17 # passa o valor de r17 para status (CTL0)
+    wrctl ienable, r17 # ativa o interval em IENABLE (CTL3)
+
+    movia r18, 10000000 # 200 ms   
+    movia r17, 0x10002000
+
+    stwio r18, 8(r17) # parte baixa
+
+    srli r19, r18, 16
+    stwio r19, 12(r17)
+
+    movi r20, 0b111
+    stwio r20, 4(r17) # Inicia temporizador
+
     movia r16, 0x10001000 ## Endereco UART
     
 REPEATER_COMMAND:
@@ -183,7 +229,10 @@ CASE1X:
     beq r21, r20, CASE11
     br REPEATER_COMMAND
 CASE10:
-    call _enable_timer
+    ori r15, r15, 0b1 # gera uma flag para controle da interrupção
+    movia r21, 0x10000000 ## carrega 0x10000000 led verm para r8
+    addi r20, r0, 0b1
+    stwio r20, (r21)
     br REPEATER_COMMAND
 CASE11:
     call _end_animation
@@ -199,7 +248,8 @@ CASE2X:
     beq r21, r20, CASE21
     br REPEATER_COMMAND
 CASE20:
-    call _enable_timer
+    ori r15, r15, 0b10
+    
     br REPEATER_COMMAND
 CASE21:
     call _timer_off
@@ -212,6 +262,10 @@ stop:
     br stop
 
 .equ LIST, 0x500
+.equ COUNTER, 0x600
+.equ TIMER, 0x700
+ 
+
 ## NOT IMPLEMENTED YET
 ##.org LIST
 ##.word 20 # Somente vinte caracteres permitidos
